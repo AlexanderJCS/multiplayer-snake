@@ -1,5 +1,6 @@
 # multiplayer-snake
-A multiplayer snake game using sockets and Pygame.
+
+A multiplayer snake game using sockets and Pygame. The objective is to gain the necessary amount of points to win and out-live your opponent.
 
 ## Disclaimer
 
@@ -7,7 +8,17 @@ A multiplayer snake game using sockets and Pygame.
 
 ## Setting up the client and server
 
-To be written later
+### Server
+
+1. Download `server.py` from the latest release and run the file. 
+2. Then, find your IP. This will be important under the client subsection.
+
+### Client
+
+1. Install the dependencies using `pip install pygame`
+2. Download `client.py` from the latest release and and run the program.
+3. Connect to the server (ask the server host if you do not have it)
+4. Input the port (this is 9850 by default)
 
 ## Contributing
 
@@ -27,9 +38,13 @@ Please clearly state what you changed in the pull request and I will review it.
 
 ### Server
 
+No features planned
+
 ### Client
 
-- Graceful disconnection 
+Planned features:
+- Graceful disconnection
+- Win/lose screen
 - IP input screen using pygame
 - Eyes for the snake
 - Designate your board vs enemy board
