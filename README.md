@@ -6,7 +6,7 @@ A multiplayer snake game using sockets and Pygame. The objective is to gain the 
 
 **This project is in alpha. It may be very buggy, and there are still features that need to be added.**
 
-## Setting up the client and server
+## Setting up the server and client
 
 ### Server
 
@@ -34,7 +34,7 @@ Please do the following before making an issue:
 
 Please clearly state what you changed in the pull request and I will review it.
 
-## To do
+## Planned features
 
 ### Server
 
@@ -53,8 +53,8 @@ Planned features:
 
 ### Server
 
-No server-side known issues
+No known server side issues
 
 ### Client
 
-No client-side known issues
+No known client side issues
