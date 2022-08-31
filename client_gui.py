@@ -23,6 +23,19 @@ logging.basicConfig(
 )
 
 
+ENDGAME_MESSAGES = {
+    "won": "You lost.",
+    "lost": "You won!",
+    "Client disconnected": "Opponent disconnected. You win."
+}
+
+ENDGAME_COLOR = {
+    "won": (0, 255, 0),
+    "lost": (255, 0, 0),
+    "Client disconnected": (0, 255, 0)
+}
+
+
 pygame.init()
 
 
@@ -218,8 +231,35 @@ class Game:
         self.surface.blit(text, text_rect)
         self.surface.blit(opponent_text, opponent_text_rect)
 
-    def lost(self):
-        pass
+    def check_endgame(self):
+        # The Pycharm warning can be ignored
+
+        if type(self.other_board) != str or not ENDGAME_MESSAGES.get(self.other_board):
+            return
+
+        print(ENDGAME_MESSAGES[self.other_board])
+        self.show_end_screen(ENDGAME_MESSAGES[self.other_board], ENDGAME_COLOR[self.other_board])
+
+    def show_end_screen(self, message, color):
+        self.surface.fill((0, 0, 0))
+
+        self.draw_grid(OPPONENT_OFFSET)
+        self.snake.draw_snake(self.surface, self.board_size, OPPONENT_OFFSET)
+        self.apple.draw(self.surface, self.board_size, OPPONENT_OFFSET)
+
+        font = pygame.font.SysFont("Calibri Light", 50)
+        text = font.render(message, True, color)
+
+        text_rect = text.get_rect()
+        text_rect.center = (WIDTH // 2, HEIGHT - WIDTH - 50)
+
+        self.surface.blit(text, text_rect)
+
+        pygame.display.update()
+
+        pygame.time.wait(5000)
+        pygame.quit()
+        exit()
 
     def run(self):
         clock = pygame.time.Clock()
@@ -242,10 +282,16 @@ class Game:
             self.send_screen_info()
             self.get_other_board()
 
+            self.check_endgame()
             self.draw_opponent_board()
 
-            if self.snake.won(self.apple_goal) or self.snake.lost(self.board_size):
-                break
+            if self.snake.won(self.apple_goal):
+                send("won")
+                self.show_end_screen("You won!", (0, 255, 0))
+
+            elif self.snake.lost(self.board_size):
+                send("lost")
+                self.show_end_screen("You lost.", (255, 0, 0))
 
             pygame.display.update()
             pygame.time.delay(self.speed)
