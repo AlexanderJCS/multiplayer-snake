@@ -13,13 +13,17 @@ client_socket.connect((IP, PORT))
 
 HEADERSIZE = 10
 WIDTH = 400
-OPPONENT_OFFSET = 500
-HEIGHT = 900
+PLAYER_OFFSET = 50
+OPPONENT_OFFSET = 500 + PLAYER_OFFSET
+HEIGHT = 950
 
 
 logging.basicConfig(
     level=logging.DEBUG
 )
+
+
+pygame.init()
 
 
 def send(message):
@@ -130,8 +134,8 @@ class Apple:
     def __init__(self, start_x=0, start_y=0):
         self.cube = Cube(start_x, start_y, (255, 0, 0))
 
-    def draw(self, surface, board_size):
-        self.cube.draw(surface, board_size, 0)
+    def draw(self, surface, board_size, y_offset):
+        self.cube.draw(surface, board_size, y_offset)
 
     def get_xy(self):
         return self.cube.x, self.cube.y
@@ -191,11 +195,6 @@ class Game:
     def get_other_board(self):
         self.other_board = receive()
 
-        if self.other_board == "Client disconnected":
-            print(self.other_board, "Victory!")
-            pygame.quit()
-            exit()
-
     def draw_opponent_board(self):
         self.draw_grid(OPPONENT_OFFSET)
 
@@ -203,6 +202,24 @@ class Game:
 
         for cube in opponent_cubes:
             cube.draw(self.surface, self.board_size, OPPONENT_OFFSET)
+
+    def draw_text(self):
+        font = pygame.font.SysFont("Calibri Light", 30)
+
+        text = font.render("Your board:", True, (255, 255, 255))
+        opponent_text = font.render("Opponent's board:", True, (255, 0, 0))
+
+        opponent_text_rect = opponent_text.get_rect()
+        opponent_text_rect.center = (WIDTH // 2, HEIGHT - WIDTH - 30)
+
+        text_rect = text.get_rect()
+        text_rect.center = (WIDTH // 2, PLAYER_OFFSET // 2)
+
+        self.surface.blit(text, text_rect)
+        self.surface.blit(opponent_text, opponent_text_rect)
+
+    def lost(self):
+        pass
 
     def run(self):
         clock = pygame.time.Clock()
@@ -217,9 +234,10 @@ class Game:
 
             self.snake.move()
 
-            self.draw_grid()
-            self.apple.draw(self.surface, self.board_size)
-            self.snake.draw_snake(self.surface, self.board_size)
+            self.draw_grid(PLAYER_OFFSET)
+            self.draw_text()
+            self.apple.draw(self.surface, self.board_size, PLAYER_OFFSET)
+            self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
 
             self.send_screen_info()
             self.get_other_board()

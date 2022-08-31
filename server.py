@@ -42,7 +42,7 @@ class Client:
 class GameSetup:
     def __init__(self):
         self.clients = []
-        self.board_size = 15  # board_size x board_size board
+        self.board_size = 16  # board_size x board_size board
         self.speed = 100  # seconds between each frame
         self.apple_goal = 5  # how many apples you need to win
 
