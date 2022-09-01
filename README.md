@@ -43,11 +43,9 @@ No features planned
 ### Client
 
 Planned features:
-- Graceful disconnection
-- Win/lose screen
-- IP input screen using pygame
+- Better IP input screen (instructions, better UI, confirmation of connection)
 - Eyes for the snake
-- Designate your board vs enemy board
+- Green enemy snake
 
 ## Known issues
 
@@ -57,4 +55,4 @@ No known server side issues
 
 ### Client
 
-No known client side issues
+- IP connection screen freezes after successfully connecting
