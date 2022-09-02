@@ -29,12 +29,6 @@ ENDGAME_MESSAGES = {
     "Client disconnected": "Opponent disconnected. You win."
 }
 
-ENDGAME_COLOR = {
-    "won": (0, 255, 0),
-    "lost": (255, 0, 0),
-    "Client disconnected": (0, 255, 0)
-}
-
 
 pygame.init()
 
@@ -42,15 +36,21 @@ pygame.init()
 def send(message):
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
-    client_socket.send(header_info)
-    client_socket.send(message)
+
+    try:
+        client_socket.send(header_info)
+        client_socket.send(message)
+
+    except ConnectionResetError:
+        print("An existing connection was forcibly closed by the remote host")
+        exit()
 
 
 def receive():
     message_length = client_socket.recv(HEADERSIZE)
 
     if message_length == b"":
-        print("Server unexpectedly disconnected")
+        print("Server disconnected")
         exit()
 
     message = client_socket.recv(int(message_length))
@@ -232,8 +232,7 @@ class Game:
         self.surface.blit(opponent_text, opponent_text_rect)
 
     def check_endgame(self):  # returns whether to exit the main run method
-        # The Pycharm warning can be ignored
-        return bool(type(self.opponent_board) == str and ENDGAME_MESSAGES.get(self.opponent_board))
+        return type(self.opponent_board) == str
 
     def show_end_screen(self, message, color):
         self.surface.fill((0, 0, 0))
@@ -267,6 +266,9 @@ class Game:
 
             self.snake.move()
 
+            await self.send_screen_info()
+            await self.get_other_board()
+
             self.draw_grid(PLAYER_OFFSET)
             self.draw_text()
 
@@ -274,12 +276,9 @@ class Game:
             self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
 
             if self.check_endgame() is True:
-                print("showing end screen")
-                self.show_end_screen(self.opponent_board, ENDGAME_COLOR[self.opponent_board])
+                # pycharm warning can be ignored
+                self.show_end_screen(ENDGAME_MESSAGES.get(self.opponent_board), (255, 255, 255))
                 return
-
-            await self.send_screen_info()
-            await self.get_other_board()
 
             self.draw_opponent_board()
 

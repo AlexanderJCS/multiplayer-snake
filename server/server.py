@@ -17,8 +17,15 @@ HEADERSIZE = 10
 def send(client, message):
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
-    client.clientsocket.send(header_info)
-    client.clientsocket.send(message)
+
+    try:
+        client.clientsocket.send(header_info)
+        client.clientsocket.send(message)
+
+    except ConnectionResetError:
+        print(f"An existing connection was forcibly closed by the remote host when sending to socket {client} with"
+              f"message {message}")
+        exit()
 
 
 def receive(client):
@@ -43,7 +50,7 @@ class GameSetup:
     def __init__(self):
         self.clients = []
         self.board_size = 16  # board_size x board_size board
-        self.speed = 8  # frames per second
+        self.speed = 10  # frames per second
         self.apple_goal = 15  # how many apples you need to win
 
     def wait_for_players(self):
