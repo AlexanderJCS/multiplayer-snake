@@ -38,7 +38,7 @@ Please clearly state what you changed in the pull request and I will review it.
 
 ### Server
 
-No features planned
+- Config file
 
 ### Client
 
