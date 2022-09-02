@@ -43,7 +43,7 @@ class GameSetup:
     def __init__(self):
         self.clients = []
         self.board_size = 16  # board_size x board_size board
-        self.speed = 100  # seconds between each frame
+        self.speed = 8  # frames per second
         self.apple_goal = 15  # how many apples you need to win
 
     def wait_for_players(self):
@@ -52,9 +52,13 @@ class GameSetup:
             print(f"Accepted client with address {address}")
             self.clients.append(Client(clientsocket, address, 0))
 
+        print("Starting game")
+
     def give_start_info(self):
         # Give the start info to the clients
         # Order is: board_size, speed, apple_goal
+
+        print("Giving start info")
         for client in self.clients:
             send(client, self.board_size)
             send(client, self.speed)

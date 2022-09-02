@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import random
 import pygame
@@ -176,7 +177,7 @@ class Game:
         self.snake = Snake([(self.board_size // 2, self.board_size // 2)])
         self.apple = Apple(2, 2)
 
-        self.other_board = []
+        self.opponent_board = []
 
         self.surface = surface
 
@@ -198,19 +199,19 @@ class Game:
             x += size_between
             y += size_between
 
-    def send_screen_info(self):
-        # Give essential data for the snake position
+    # Give essential data for the snake position and apple position to the server
+    async def send_screen_info(self):
         pos_data = [(cube.x, cube.y, (0, 155, 255)) for cube in self.snake.coords]
         pos_data.insert(0, (self.apple.cube.x, self.apple.cube.y, (255, 0, 0)))
         send(pos_data)
 
-    def get_other_board(self):
-        self.other_board = receive()
+    async def get_other_board(self):
+        self.opponent_board = receive()
 
     def draw_opponent_board(self):
         self.draw_grid(OPPONENT_OFFSET)
 
-        opponent_cubes = [Cube(*pos_data) for pos_data in self.other_board]
+        opponent_cubes = [Cube(*pos_data) for pos_data in self.opponent_board]
 
         for cube in opponent_cubes:
             cube.draw(self.surface, self.board_size, OPPONENT_OFFSET)
@@ -232,13 +233,7 @@ class Game:
 
     def check_endgame(self):  # returns whether to exit the main run method
         # The Pycharm warning can be ignored
-
-        if type(self.other_board) != str or not ENDGAME_MESSAGES.get(self.other_board):
-            return False
-
-        print(ENDGAME_MESSAGES[self.other_board])
-        self.show_end_screen(ENDGAME_MESSAGES[self.other_board], ENDGAME_COLOR[self.other_board])
-        return True
+        return bool(type(self.opponent_board) == str and ENDGAME_MESSAGES.get(self.opponent_board))
 
     def show_end_screen(self, message, color):
         self.surface.fill((0, 0, 0))
@@ -259,7 +254,7 @@ class Game:
 
         pygame.time.wait(3000)
 
-    def run(self):
+    async def run(self):
         clock = pygame.time.Clock()
 
         while True:
@@ -274,14 +269,17 @@ class Game:
 
             self.draw_grid(PLAYER_OFFSET)
             self.draw_text()
+
             self.apple.draw(self.surface, self.board_size, PLAYER_OFFSET)
             self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
 
-            self.send_screen_info()
-            self.get_other_board()
-
             if self.check_endgame() is True:
+                print("showing end screen")
+                self.show_end_screen(self.opponent_board, ENDGAME_COLOR[self.opponent_board])
                 return
+
+            await self.send_screen_info()
+            await self.get_other_board()
 
             self.draw_opponent_board()
 
@@ -296,11 +294,10 @@ class Game:
                 return
 
             pygame.display.update()
-            pygame.time.delay(self.speed)
             clock.tick(self.speed)
 
 
-def main():
+async def main():
     pygame.display.set_caption("Multiplayer Snake")
 
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -311,8 +308,8 @@ def main():
     client_socket.connect((ip, int(port)))
 
     game = Game(surface)
-    game.run()
+    await game.run()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

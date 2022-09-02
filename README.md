@@ -46,8 +46,11 @@ Planned features:
 - Better IP input screen (instructions, better UI, confirmation of connection)
 - Eyes for the snake
 - Green enemy snake
+- Score counter
 
 ## Known issues
+
+- Losing client crashes at the end of a game
 
 ### Server
 
