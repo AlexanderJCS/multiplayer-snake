@@ -1,8 +1,8 @@
 import threading
-import logging
 import random
 import pygame
 import socket
+import json
 
 
 import ip_connection_screen as connect
@@ -13,15 +13,19 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.settimeout(10)
 
 HEADERSIZE = 10
-WIDTH = 400
-PLAYER_OFFSET = 50
-OPPONENT_OFFSET = 500 + PLAYER_OFFSET
-HEIGHT = 950
 
+with open("preferences.json") as f:
+    SETTINGS = json.load(f)
 
-logging.basicConfig(
-    level=logging.DEBUG
-)
+with open("screen_sizes.json") as f:
+    SIZES = json.load(f)
+
+gui = "small" if SETTINGS.get("small_gui") else "large"
+
+WIDTH = SIZES[gui]["width"]
+PLAYER_OFFSET = SIZES[gui]["player_offset"]
+OPPONENT_OFFSET = SIZES[gui]["opponent_offset"]
+HEIGHT = SIZES[gui]["height"]
 
 
 ENDGAME_MESSAGES = {
