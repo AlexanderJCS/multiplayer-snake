@@ -1,4 +1,4 @@
-import asyncio
+import threading
 import logging
 import random
 import pygame
@@ -96,10 +96,10 @@ class Snake:
         elif keys[pygame.K_RIGHT] and self.dir != (-1, 0):
             self.dir = (1, 0)
 
-        elif keys[pygame.K_UP] and self.dir != (0, -1):
+        elif keys[pygame.K_UP] and self.dir != (0, 1):
             self.dir = (0, -1)
 
-        elif keys[pygame.K_DOWN] and self.dir != (0, 1):
+        elif keys[pygame.K_DOWN] and self.dir != (0, -1):
             self.dir = (0, 1)
 
     def check_apple_eaten(self, apple):
@@ -129,15 +129,16 @@ class Snake:
         return len(self.coords) >= win_len
 
     def lost(self, board_size):
-        if self.coords[0].x >= board_size or self.coords[0].x < 0 or \
-                self.coords[0].y >= board_size or self.coords[0].y < 0:
+        head = self.coords[-1]
+
+        if head.x >= board_size or head.x < 0 or head.y >= board_size or head.y < 0:
             return True
 
         for i, block in enumerate(self.coords):
-            if i == 0:
+            if i == len(self.coords) - 1:
                 continue
 
-            if block.x == self.coords[0].x and block.y == self.coords[0].y:
+            if block.x == head.x and block.y == head.y:
                 return True
 
         return False
@@ -200,12 +201,12 @@ class Game:
             y += size_between
 
     # Give essential data for the snake position and apple position to the server
-    async def send_screen_info(self):
+    def send_screen_info(self):
         pos_data = [(cube.x, cube.y, (0, 155, 255)) for cube in self.snake.coords]
         pos_data.insert(0, (self.apple.cube.x, self.apple.cube.y, (255, 0, 0)))
         send(pos_data)
 
-    async def get_other_board(self):
+    def get_other_board(self):
         self.opponent_board = receive()
 
     def draw_opponent_board(self):
@@ -253,8 +254,11 @@ class Game:
 
         pygame.time.wait(3000)
 
-    async def run(self):
+    def run(self):
         clock = pygame.time.Clock()
+
+        receive_thread = threading.Thread(target=self.get_other_board)
+        receive_thread.start()
 
         while True:
             self.surface.fill((0, 0, 0))
@@ -266,8 +270,8 @@ class Game:
 
             self.snake.move()
 
-            await self.send_screen_info()
-            await self.get_other_board()
+            send_thread = threading.Thread(target=self.send_screen_info)
+            send_thread.start()
 
             self.draw_grid(PLAYER_OFFSET)
             self.draw_text()
@@ -280,6 +284,7 @@ class Game:
                 self.show_end_screen(ENDGAME_MESSAGES.get(self.opponent_board), (255, 255, 255))
                 return
 
+            receive_thread.join()
             self.draw_opponent_board()
 
             if self.snake.won(self.apple_goal):
@@ -293,10 +298,14 @@ class Game:
                 return
 
             pygame.display.update()
+
+            receive_thread = threading.Thread(target=self.get_other_board)
+            receive_thread.start()
+
             clock.tick(self.speed)
 
 
-async def main():
+def main():
     pygame.display.set_caption("Multiplayer Snake")
 
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -307,8 +316,8 @@ async def main():
     client_socket.connect((ip, int(port)))
 
     game = Game(surface)
-    await game.run()
+    game.run()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
