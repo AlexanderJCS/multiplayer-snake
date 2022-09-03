@@ -49,9 +49,9 @@ class Client:
 class GameSetup:
     def __init__(self):
         self.clients = []
-        self.board_size = 16  # board_size x board_size board
+        self.board_size = 20  # board_size x board_size board
         self.speed = 10  # frames per second (or gridspaces / second)
-        self.apple_goal = 15  # how many apples you need to win
+        self.apple_goal = 25  # how long your snake needs to be to win
 
     def wait_for_players(self):
         while len(self.clients) < 2:
@@ -67,6 +67,7 @@ class GameSetup:
 
         print("Giving start info")
         for client in self.clients:
+            send(client, "start")
             send(client, self.board_size)
             send(client, self.speed)
             send(client, self.apple_goal)
@@ -86,9 +87,6 @@ class Game:
     def get_player_screen(giver, recipient):
         while True:
             screen = receive(giver)
-
-            # __import__("time").sleep(0.05)  # simulate lag between client and server for debugging
-
             send(recipient, screen)
 
             # If the player won or lost

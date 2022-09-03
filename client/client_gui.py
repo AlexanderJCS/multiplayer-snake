@@ -3,13 +3,14 @@ import logging
 import random
 import pygame
 import socket
-import json
+
 
 import ip_connection_screen as connect
 
+from networking import send, receive
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+client_socket.settimeout(10)
 
 HEADERSIZE = 10
 WIDTH = 400
@@ -31,31 +32,6 @@ ENDGAME_MESSAGES = {
 
 
 pygame.init()
-
-
-def send(message):
-    message = json.dumps(message, ensure_ascii=False).encode("utf-8")
-    header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
-
-    try:
-        client_socket.send(header_info)
-        client_socket.send(message)
-
-    except ConnectionResetError:
-        print("An existing connection was forcibly closed by the remote host")
-        exit()
-
-
-def receive():
-    message_length = client_socket.recv(HEADERSIZE)
-
-    if message_length == b"":
-        print("Server disconnected")
-        exit()
-
-    message = client_socket.recv(int(message_length))
-
-    return json.loads(message)
 
 
 class Cube:
@@ -171,9 +147,9 @@ class Apple:
 
 class Game:
     def __init__(self, surface):
-        self.board_size = receive()
-        self.speed = receive()
-        self.apple_goal = receive()
+        self.board_size = receive(client_socket)
+        self.speed = receive(client_socket)
+        self.apple_goal = receive(client_socket)
 
         self.snake = Snake([(self.board_size // 2, self.board_size // 2)])
         self.apple = Apple(2, 2)
@@ -204,10 +180,10 @@ class Game:
     def send_screen_info(self):
         pos_data = [(cube.x, cube.y, (0, 155, 255)) for cube in self.snake.coords]
         pos_data.insert(0, (self.apple.cube.x, self.apple.cube.y, (255, 0, 0)))
-        send(pos_data)
+        send(pos_data, client_socket)
 
     def get_other_board(self):
-        self.opponent_board = receive()
+        self.opponent_board = receive(client_socket)
 
     def draw_opponent_board(self):
         self.draw_grid(OPPONENT_OFFSET)
@@ -281,19 +257,19 @@ class Game:
 
             if self.check_endgame() is True:
                 # pycharm warning can be ignored
-                self.show_end_screen(ENDGAME_MESSAGES.get(self.opponent_board), (255, 255, 255))
+                self.show_end_screen(ENDGAME_MESSAGES.get(self.opponent_board, client_socket), (255, 255, 255))
                 return
 
             receive_thread.join()
             self.draw_opponent_board()
 
             if self.snake.won(self.apple_goal):
-                send("won")
+                send("won", client_socket)
                 self.show_end_screen("You won!", (0, 255, 0))
                 return
 
             elif self.snake.lost(self.board_size):
-                send("lost")
+                send("lost", client_socket)
                 self.show_end_screen("You lost.", (255, 0, 0))
                 return
 
@@ -310,10 +286,10 @@ def main():
 
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
 
-    conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET)
-    ip, port = conn.run()
+    conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket)
+    conn.run()
 
-    client_socket.connect((ip, int(port)))
+    client_socket.settimeout(1000)
 
     game = Game(surface)
     game.run()

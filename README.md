@@ -19,7 +19,7 @@ A multiplayer snake game using sockets and Pygame. The objective is to gain the 
 2. Download `client.py` from the latest release and and run the program.
 3. Input the IP by clicking on the box. Ask the server host if you do not have the IP.
 4. Input the port (this is 9850 by default)
-5. Press enter. **Currently, there is no confirmation for if you are connected until the game starts.**
+5. Press enter.
 
 ## Contributing
 
@@ -40,11 +40,11 @@ Please clearly state what you changed in the pull request and I will review it.
 ### Server
 
 - Config file
+- Win/loss detection is server-side to avoid cheating
 
 ### Client
 
 Planned features:
-- Better IP input screen (instructions, better UI, confirmation of connection)
 - Eyes for the snake
 - Green enemy snake
 - Score counter
@@ -57,4 +57,4 @@ No known server side issues
 
 ### Client known issues
 
-- IP connection screen freezes after successfully connecting
+Tapping the arrow keys may not register the move
