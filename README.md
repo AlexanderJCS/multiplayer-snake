@@ -1,8 +1,8 @@
 # multiplayer-snake
 
-A multiplayer snake game using sockets and Pygame. The objective is to gain the necessary amount of points to win and out-live your opponent.
+A multiplayer snake game using sockets and Pygame. The objective is to gain the necessary amount of points to win and/or to out-live your opponent.
 
-## Disclaimer
+## Disclaimer - Alpha
 
 **This project is in alpha. It may be very buggy, and there are still features that need to be added.**
 
@@ -51,10 +51,10 @@ Planned features:
 
 ## Known issues
 
-### Server
+### Server known issues
 
 No known server side issues
 
-### Client
+### Client known issues
 
 - IP connection screen freezes after successfully connecting
