@@ -277,7 +277,6 @@ class Game:
                     self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
                     return
 
-                receive_thread.join()
                 self.draw_opponent_board()
 
                 if self.snake.won(self.apple_goal):
