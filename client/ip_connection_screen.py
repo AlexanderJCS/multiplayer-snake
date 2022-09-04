@@ -27,7 +27,7 @@ class InputBox:
             # Change the current color of the input box.
             self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
 
-        if event.type == pygame.KEYDOWN and self.active:
+        if self.active and event.type == pygame.KEYDOWN and event.key != pygame.K_RETURN:
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
 
@@ -61,7 +61,7 @@ class IPConnectionScreen:
         self.player_offset = player_offset
 
         # Define the IP text
-        self.ip_text = FONT.render("IP:", True, (255, 255, 255))
+        self.ip_text = FONT.render("Server IP:", True, (255, 255, 255))
         self.ip_text_rect = self.ip_text.get_rect()
         self.ip_text_rect.center = (self.width // 2, self.player_offset)
 
@@ -69,7 +69,7 @@ class IPConnectionScreen:
         self.ip_input = InputBox(self.width // 2 - 100, self.player_offset + 20, 200, 40)
 
         # Define the port text
-        self.port_text = FONT.render("Port:", True, (255, 255, 255))
+        self.port_text = FONT.render("Server Port:", True, (255, 255, 255))
         self.port_text_rect = self.port_text.get_rect()
         self.port_text_rect.center = (self.width // 2, self.player_offset + 180)
 
@@ -100,6 +100,8 @@ class IPConnectionScreen:
         pygame.display.update()
 
     def run(self):
+        clock = pygame.time.Clock()
+
         while True:
             if self.start_message != "":
                 return self.ip_input.get_text(), self.port_input.get_text()
@@ -123,7 +125,7 @@ class IPConnectionScreen:
 
             self.draw()
 
-            pygame.time.wait(1 // 60)
+            clock.tick(60)
 
     def connect(self):  # returns: if the client successfully connected
         self.info_text = FONT.render("Connecting...", True, (255, 255, 255))

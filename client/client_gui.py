@@ -4,7 +4,7 @@ import pygame
 import socket
 import json
 
-
+import gui_text
 import ip_connection_screen as connect
 
 from networking import send, receive
@@ -207,13 +207,18 @@ class Game:
         opponent_text = font.render("Opponent's board:", True, (255, 0, 0))
 
         opponent_text_rect = opponent_text.get_rect()
-        opponent_text_rect.center = (WIDTH // 2, HEIGHT - WIDTH - 30)
+        opponent_text_rect.center = (95, HEIGHT - WIDTH - 30)
 
         text_rect = text.get_rect()
-        text_rect.center = (WIDTH // 2, PLAYER_OFFSET // 2)
+        text_rect.center = (60, PLAYER_OFFSET // 2)
 
         self.surface.blit(text, text_rect)
         self.surface.blit(opponent_text, opponent_text_rect)
+
+        score = gui_text.Text(f"Score: {len(self.snake.coords)} / {self.apple_goal}", font,
+                              (255, 255, 255), (WIDTH - 80, PLAYER_OFFSET // 2))
+
+        score.draw(self.surface)
 
     def check_endgame(self):  # returns whether to exit the main run method
         return type(self.opponent_board) == str
