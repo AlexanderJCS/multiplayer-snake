@@ -100,8 +100,6 @@ class IPConnectionScreen:
         pygame.display.update()
 
     def run(self):
-
-
         while True:
             if self.start_message != "":
                 return self.ip_input.get_text(), self.port_input.get_text()

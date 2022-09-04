@@ -14,18 +14,17 @@ server_socket.listen(2)
 HEADERSIZE = 10
 
 
-def send(client, message):
+def send(client, message):  # returns: whether the message was sent
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
 
     try:
         client.clientsocket.send(header_info)
         client.clientsocket.send(message)
+        return True
 
     except ConnectionResetError:
-        print(f"An existing connection was forcibly closed by the remote host when sending to socket {client} with"
-              f"message {message}")
-        exit()
+        return False
 
 
 def receive(client):
@@ -40,24 +39,23 @@ def receive(client):
 
 
 class Client:
-    def __init__(self, clientsocket, ip, score):
+    def __init__(self, clientsocket, ip):
         self.clientsocket = clientsocket
         self.ip = ip
-        self.score = score
 
 
 class GameSetup:
     def __init__(self):
         self.clients = []
         self.board_size = 20  # board_size x board_size board
-        self.speed = 10  # frames per second (or gridspaces / second)
+        self.speed = 7  # server tickrate and movement speed, lower = faster
         self.apple_goal = 25  # how long your snake needs to be to win
 
     def wait_for_players(self):
         while len(self.clients) < 2:
             clientsocket, address = server_socket.accept()
             print(f"Accepted client with address {address}")
-            self.clients.append(Client(clientsocket, address, 0))
+            self.clients.append(Client(clientsocket, address))
 
         print("Starting game")
 
@@ -82,16 +80,16 @@ class GameSetup:
 class Game:
     def __init__(self, clients):
         self.clients = clients
+        self.ended = False
 
-    @staticmethod
-    def get_player_screen(giver, recipient):
-        while True:
+    def get_player_screen(self, giver, recipient):
+        while not self.ended:
             screen = receive(giver)
             send(recipient, screen)
 
             # If the player won or lost
             if screen in ("won", "lost"):
-                return screen
+                self.ended = True
 
     def run(self):
         t1 = threading.Thread(target=self.get_player_screen, args=(self.clients[0], self.clients[1]))
@@ -105,11 +103,15 @@ class Game:
 
 
 def main():
-    g = GameSetup()
-    clients = g.setup()
+    while True:
+        g = GameSetup()
+        clients = g.setup()
 
-    g = Game(clients)
-    g.run()
+        g = Game(clients)
+        g.run()
+
+        for client in clients:
+            client.clientsocket.close()
 
 
 if __name__ == "__main__":
