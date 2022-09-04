@@ -14,6 +14,10 @@ server_socket.listen(2)
 HEADERSIZE = 10
 
 
+with open("preferences.json") as f:
+    OPTIONS = json.load(f)
+
+
 def send(client, message):  # returns: whether the message was sent
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
@@ -47,9 +51,9 @@ class Client:
 class GameSetup:
     def __init__(self):
         self.clients = []
-        self.board_size = 20  # board_size x board_size board
-        self.speed = 7  # server tickrate and movement speed, lower = faster
-        self.apple_goal = 25  # how long your snake needs to be to win
+        self.board_size = OPTIONS["board_size"]  # board_size x board_size board
+        self.speed = OPTIONS["speed"]  # server tickrate and movement speed, lower = faster
+        self.apple_goal = OPTIONS["apple_goal"]  # how long your snake needs to be to win
 
     def wait_for_players(self):
         while len(self.clients) < 2:
