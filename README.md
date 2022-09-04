@@ -17,6 +17,7 @@ A multiplayer snake game using sockets and Pygame. The objective is to gain the 
 
 1. Install the dependencies using `pip install pygame`
 2. Download `client.py` from the latest release and and run the program.
+3. If the program does not fit your screen, Alt + F4. Open `preferences.json` and set `small_gui` to `true`.
 3. Input the IP by clicking on the box. Ask the server host if you do not have the IP.
 4. Input the port (this is 9850 by default)
 5. Press enter.
