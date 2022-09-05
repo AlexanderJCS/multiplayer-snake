@@ -49,8 +49,8 @@ class Client:
 
 
 class GameSetup:
-    def __init__(self):
-        self.clients = []
+    def __init__(self, clients):
+        self.clients = clients
         self.board_size = OPTIONS["board_size"]  # board_size x board_size board
         self.speed = OPTIONS["speed"]  # server tickrate and movement speed, lower = faster
         self.apple_goal = OPTIONS["apple_goal"]  # how long your snake needs to be to win
@@ -65,7 +65,7 @@ class GameSetup:
 
     def give_start_info(self):
         # Give the start info to the clients
-        # Order is: board_size, speed, apple_goal
+        # Order is: "start", board_size, speed, apple_goal
 
         print("Giving start info")
         for client in self.clients:
@@ -107,15 +107,14 @@ class Game:
 
 
 def main():
+    clients = []
+
     while True:
-        g = GameSetup()
+        g = GameSetup(clients)
         clients = g.setup()
 
         g = Game(clients)
         g.run()
-
-        for client in clients:
-            client.clientsocket.close()
 
 
 if __name__ == "__main__":

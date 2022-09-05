@@ -248,56 +248,64 @@ class Game:
         receive_thread = threading.Thread(target=self.get_other_board)
         receive_thread.start()
 
+        send_thread = threading.Thread(target=self.send_screen_info)
+        send_thread.start()
+
         frame_count = 0
 
         while True:
             if frame_count != self.speed:
                 self.snake.get_input()
 
-            else:
-                self.surface.fill((0, 0, 0))
+                frame_count += 1
+                clock.tick(60)
+                continue
 
-                self.snake.get_input()
+            self.surface.fill((0, 0, 0))
 
-                if self.snake.check_apple_eaten(self.apple):
-                    self.apple.regenerate_coords(self.snake, self.board_size)
+            self.snake.get_input()
+            self.snake.move()
 
-                self.snake.move()
+            send_thread.join()
+            send_thread = threading.Thread(target=self.send_screen_info)
+            send_thread.start()
 
-                send_thread = threading.Thread(target=self.send_screen_info)
-                send_thread.start()
+            if self.snake.check_apple_eaten(self.apple):
+                self.apple.regenerate_coords(self.snake, self.board_size)
 
-                self.draw_grid(PLAYER_OFFSET)
-                self.draw_text()
+            self.draw_grid(PLAYER_OFFSET)
+            self.draw_text()
 
-                self.apple.draw(self.surface, self.board_size, PLAYER_OFFSET)
-                self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
+            self.apple.draw(self.surface, self.board_size, PLAYER_OFFSET)
+            self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
 
-                if self.check_endgame() is True:
-                    self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
-                    return
+            if self.check_endgame() is True:
+                self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
+                break
 
-                self.draw_opponent_board()
+            receive_thread.join()
+            self.draw_opponent_board()
 
-                if self.snake.won(self.apple_goal):
-                    send("won", client_socket)
-                    self.show_end_screen("You won!", (0, 255, 0))
-                    return
+            if self.snake.won(self.apple_goal):
+                send("won", client_socket)
+                self.show_end_screen("You won!", (0, 255, 0))
+                break
 
-                elif self.snake.lost(self.board_size):
-                    send("lost", client_socket)
-                    self.show_end_screen("You lost.", (255, 0, 0))
-                    return
+            elif self.snake.lost(self.board_size):
+                send("lost", client_socket)
+                self.show_end_screen("You lost.", (255, 0, 0))
+                break
 
-                pygame.display.update()
+            pygame.display.update()
 
-                receive_thread = threading.Thread(target=self.get_other_board)
-                receive_thread.start()
+            receive_thread = threading.Thread(target=self.get_other_board)
+            receive_thread.start()
 
-                frame_count = 0
-
-            frame_count += 1
+            frame_count = 0
             clock.tick(60)
+
+        send_thread.join()
+        receive_thread.join()
 
 
 def main():
@@ -310,8 +318,12 @@ def main():
 
     client_socket.settimeout(1000)
 
-    game = Game(surface)
-    game.run()
+    while True:
+        game = Game(surface)
+        game.run()
+
+        while receive(client_socket) != "start":
+            pass
 
 
 if __name__ == "__main__":
