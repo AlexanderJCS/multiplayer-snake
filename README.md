@@ -40,17 +40,19 @@ Please clearly state what you changed in the pull request and I will review it.
 
 ### Server
 
-Planned dinner
-- Config file
+Planned features for alpha:
 - Win/loss detection is server-side to avoid cheating
-- Replay
 
 ### Client
 
-Planned features:
+Planned features for alpha:
 - Eyes for the snake
 - Green enemy snake
-- Score counter
+- Replay
+
+Planned features for beta:
+- Code refactor
+- Bugfixes
 
 ## Known issues
 
