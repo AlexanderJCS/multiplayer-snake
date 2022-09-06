@@ -40,15 +40,12 @@ Please clearly state what you changed in the pull request and I will review it.
 
 ### Server
 
-Planned features for alpha:
-- Win/loss detection is server-side to avoid cheating
+No planned features
 
 ### Client
 
 Planned features for alpha:
-- Eyes for the snake
 - Green enemy snake
-- Replay
 
 Planned features for beta:
 - Code refactor
