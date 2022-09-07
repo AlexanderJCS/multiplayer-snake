@@ -165,7 +165,7 @@ class Game:
 
         self.surface = surface
 
-        self.ended = False
+        self.you_won = None
 
     def draw_grid(self, y_offset=0):
         size_between = WIDTH // self.board_size
@@ -187,11 +187,12 @@ class Game:
 
     # Give essential data for the snake position and apple position to the server
     def send_screen_info(self):
-        pos_data = [(cube.x, cube.y, (0, 155, 255)) for cube in self.snake.coords]
+        pos_data = [(cube.x, cube.y, (20, 200, 25)) for cube in self.snake.coords]
         pos_data.insert(0, (self.apple.cube.x, self.apple.cube.y, (255, 0, 0)))
         send(pos_data, client_socket)
 
     def get_other_board(self):
+        self.you_won = receive(client_socket)
         self.opponent_board = receive(client_socket)
 
     def draw_opponent_board(self):
@@ -221,9 +222,6 @@ class Game:
                               (255, 255, 255), (WIDTH - 80, PLAYER_OFFSET // 2))
 
         score.draw(self.surface)
-
-    def check_endgame(self):  # returns whether to exit the main run method
-        return type(self.opponent_board) == str
 
     def show_end_screen(self, message, color):
         self.surface.fill((0, 0, 0))
@@ -279,8 +277,13 @@ class Game:
 
             receive_thread.join()
 
-            if self.check_endgame() is True:
-                self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
+            if self.you_won is False:
+                self.show_end_screen("You lost.", (255, 0, 0))
+                send_thread.join()
+                break
+
+            elif self.you_won is True:
+                self.show_end_screen("You won!", (0, 255, 0))
                 send_thread.join()
                 break
 
@@ -300,9 +303,6 @@ class Game:
                 break
 
             pygame.display.update()
-
-            if self.ended:
-                break
 
             receive_thread = threading.Thread(target=self.get_other_board)
             receive_thread.start()
@@ -328,8 +328,8 @@ def main():
         game = Game(surface)
         game.run()
 
-        while temp := receive(client_socket) != "start":
-            print(temp)
+        while tmp := receive(client_socket) != "start":
+            print(f"Waiting for newgame. Packet: {tmp}")
 
 
 if __name__ == "__main__":
