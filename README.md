@@ -44,9 +44,6 @@ No planned features
 
 ### Client
 
-Planned features for alpha:
-- Green enemy snake
-
 Planned features for beta:
 - Code refactor
 - Bugfixes
@@ -59,4 +56,4 @@ No known server side issues
 
 ### Client known issues
 
-Tapping the arrow keys may not register the move
+The client freezes when the opponent disconnects
