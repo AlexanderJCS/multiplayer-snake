@@ -1,6 +1,7 @@
 import threading
 import socket
 import json
+import time
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 9850
@@ -61,8 +62,6 @@ class GameSetup:
             print(f"Accepted client with address {address}")
             self.clients.append(Client(clientsocket, address))
 
-        print("Starting game")
-
     def give_start_info(self):
         # Give the start info to the clients
         # Order is: "start", board_size, speed, apple_goal
@@ -89,6 +88,10 @@ class Game:
     def get_player_screen(self, giver, recipient):
         while not self.ended:
             screen = receive(giver)
+
+            if screen == "ready":
+                break
+
             send(recipient, screen)
 
             # If the player won or lost
@@ -101,6 +104,9 @@ class Game:
 
         t1.start()
         t2.start()
+
+        while not self.ended:
+            time.sleep(0.1)
 
         t1.join()
         t2.join()
@@ -115,6 +121,10 @@ def main():
 
         g = Game(clients)
         g.run()
+
+        for client in clients:
+            while receive(client) != "ready2":
+                pass
 
 
 if __name__ == "__main__":
