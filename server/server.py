@@ -86,34 +86,14 @@ class Game:
         self.clients = clients
         self.ended = False
 
-    @staticmethod
-    def determine_won_lost(snake):
-        if len(snake) > OPTIONS["apple_goal"]:
-            return "won"
-
-        if snake[-1][0] >= OPTIONS["board_size"] or snake[-1][1] >= OPTIONS["board_size"] or \
-                snake[-1][0] < 0 or snake[-1][1] < 0:
-            return "lost"
-
-        for i, cube in enumerate(snake):
-            if i == len(snake) - 1:
-                continue
-
-            if cube == snake[-1]:
-                return "lost"
-
-        return ""
-
     def get_player_screen(self, giver, recipient):
         while not self.ended:
             screen = receive(giver)
+            send(recipient, screen)
 
             # If the player won or lost
-            if result := self.determine_won_lost(screen):
-                send(recipient, result)
+            if screen in ("won", "lost"):
                 self.ended = True
-
-            send(recipient, screen)
 
     def run(self):
         t1 = threading.Thread(target=self.get_player_screen, args=(self.clients[0], self.clients[1]))

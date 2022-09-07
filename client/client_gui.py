@@ -165,8 +165,6 @@ class Game:
 
         self.surface = surface
 
-        self.ended = False
-
     def draw_grid(self, y_offset=0):
         size_between = WIDTH // self.board_size
 
@@ -268,6 +266,10 @@ class Game:
             self.snake.get_input()
             self.snake.move()
 
+            send_thread.join()
+            send_thread = threading.Thread(target=self.send_screen_info)
+            send_thread.start()
+
             if self.snake.check_apple_eaten(self.apple):
                 self.apple.regenerate_coords(self.snake, self.board_size)
 
@@ -277,32 +279,24 @@ class Game:
             self.apple.draw(self.surface, self.board_size, PLAYER_OFFSET)
             self.snake.draw_snake(self.surface, self.board_size, PLAYER_OFFSET)
 
-            receive_thread.join()
-
             if self.check_endgame() is True:
                 self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
-                send_thread.join()
                 break
 
-            send_thread.join()
-
-            send_thread = threading.Thread(target=self.send_screen_info)
-            send_thread.start()
-
+            receive_thread.join()
             self.draw_opponent_board()
 
             if self.snake.won(self.apple_goal):
+                send("won", client_socket)
                 self.show_end_screen("You won!", (0, 255, 0))
                 break
 
             elif self.snake.lost(self.board_size):
+                send("lost", client_socket)
                 self.show_end_screen("You lost.", (255, 0, 0))
                 break
 
             pygame.display.update()
-
-            if self.ended:
-                break
 
             receive_thread = threading.Thread(target=self.get_other_board)
             receive_thread.start()
@@ -328,8 +322,8 @@ def main():
         game = Game(surface)
         game.run()
 
-        while temp := receive(client_socket) != "start":
-            print(temp)
+        while receive(client_socket) != "start":
+            pass
 
 
 if __name__ == "__main__":
