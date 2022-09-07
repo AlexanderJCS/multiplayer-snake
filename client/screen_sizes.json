@@ -2,7 +2,7 @@
   "small": {
     "width": 300,
     "player_offset": 50,
-    "opponent_offset": 400,
+    "opponent_offset": 450,
     "height": 750
   },
   "large": {
