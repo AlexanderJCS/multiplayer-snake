@@ -46,6 +46,7 @@ No planned features
 
 Planned features for beta:
 - Code refactor
+- UI improvements with different fonts
 - Bugfixes
 
 ## Known issues
