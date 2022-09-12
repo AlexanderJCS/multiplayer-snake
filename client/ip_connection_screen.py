@@ -62,7 +62,6 @@ class IPConnectionScreen:
         self.player_offset = player_offset
 
         # Text
-
         self.ip_text = Text("Server IP:", FONT, (255, 255, 255),
                             (self.width // 2, self.player_offset))
 
@@ -121,24 +120,17 @@ class IPConnectionScreen:
             clock.tick(60)
 
     def connect(self):  # returns: if the client successfully connected
-        self.info_text = FONT.render("Connecting...", True, (255, 255, 255))
-        self.info_text_rect = self.info_text.get_rect()
-        self.info_text_rect.center = (self.width // 2, self.player_offset + 300)
+        self.info_text.change_text("Connecting...")
         self.draw()
 
         try:
             self.client_socket.connect((self.ip_input.get_text(), int(self.port_input.get_text())))
 
         except (TypeError, socket.error, ConnectionRefusedError, TimeoutError, ValueError):
-            self.info_text = FONT.render("Could not connect.", True, (255, 255, 255))
-            self.info_text_rect = self.info_text.get_rect()
-            self.info_text_rect.center = (self.width // 2, self.player_offset + 300)
+            self.info_text.change_text("Failed")
             self.draw()
             return False
 
-        self.info_text = FONT.render("Waiting for other players.", True, (255, 255, 255))
-        self.info_text_rect = self.info_text.get_rect()
-        self.info_text_rect.center = (self.width // 2, self.player_offset + 300)
+        self.info_text.change_text("Connected")
         self.draw()
-
         return True
