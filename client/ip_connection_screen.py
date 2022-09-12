@@ -3,6 +3,7 @@ import pygame
 import socket
 
 from networking import receive
+from gui_text import Text
 
 pygame.init()
 
@@ -16,7 +17,7 @@ class InputBox:
         self.rect = pygame.Rect(x, y, w, h)
         self.color = COLOR_INACTIVE
         self.text = text
-        self.txt_surface = FONT.render(text, True, self.color)
+        self.txt_surface = FONT.render(text, True, (255, 255, 255))
         self.active = False
 
     def handle_event(self, event):
@@ -60,29 +61,22 @@ class IPConnectionScreen:
         self.width = width
         self.player_offset = player_offset
 
-        # Define the IP text
-        self.ip_text = FONT.render("Server IP:", True, (255, 255, 255))
-        self.ip_text_rect = self.ip_text.get_rect()
-        self.ip_text_rect.center = (self.width // 2, self.player_offset)
+        # Text
 
-        # Define the IP input box
+        self.ip_text = Text("Server IP:", FONT, (255, 255, 255),
+                            (self.width // 2, self.player_offset))
+
+        self.port_text = Text("Server Port:", FONT, (255, 255, 255),
+                              (self.width // 2, self.player_offset + 180))
+
+        self.info_text = Text("Press enter to connect", FONT, (255, 255, 255),
+                              (self.width // 2, self.player_offset + 300))
+
+        # Input boxes
         self.ip_input = InputBox(self.width // 2 - 100, self.player_offset + 20, 200, 40)
-
-        # Define the port text
-        self.port_text = FONT.render("Server Port:", True, (255, 255, 255))
-        self.port_text_rect = self.port_text.get_rect()
-        self.port_text_rect.center = (self.width // 2, self.player_offset + 180)
-
-        # Define the port input box
         self.port_input = InputBox(self.width // 2 - 100, self.player_offset + 200, 200, 40)
 
-        # Define the info text
-        self.info_text = FONT.render("Press enter to connect", True, (255, 255, 255))
-        self.info_text_rect = self.info_text.get_rect()
-        self.info_text_rect.center = (self.width // 2, self.player_offset + 300)
-
         self.start_message = ""
-
         self.connected = False
 
     def get_start_message(self):
@@ -91,9 +85,9 @@ class IPConnectionScreen:
     def draw(self):
         self.surface.fill((0, 0, 0))
 
-        self.surface.blit(self.ip_text, self.ip_text_rect)
-        self.surface.blit(self.port_text, self.port_text_rect)
-        self.surface.blit(self.info_text, self.info_text_rect)
+        self.ip_text.draw(self.surface)
+        self.port_text.draw(self.surface)
+        self.info_text.draw(self.surface)
 
         self.ip_input.draw(self.surface)
         self.port_input.draw(self.surface)
@@ -124,7 +118,6 @@ class IPConnectionScreen:
                 self.port_input.handle_event(event)
 
             self.draw()
-
             clock.tick(60)
 
     def connect(self):  # returns: if the client successfully connected

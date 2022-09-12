@@ -230,7 +230,7 @@ class Game:
         self.snake.draw_snake(self.surface, self.board_size, OPPONENT_OFFSET)
         self.apple.draw(self.surface, self.board_size, OPPONENT_OFFSET)
 
-        font = pygame.font.SysFont("Calibri Light", 50)
+        font = pygame.font.SysFont("Calibri Light", 40)
         text = font.render(message, True, color)
 
         text_rect = text.get_rect()
@@ -286,12 +286,12 @@ class Game:
 
             if self.snake.won(self.apple_goal):
                 send("won", client_socket)
-                self.show_end_screen("You won!", (0, 255, 0))
+                self.show_end_screen(f"You won with a score of {len(self.snake.coords)}!", (0, 255, 0))
                 break
 
             elif self.snake.lost(self.board_size):
                 send("lost", client_socket)
-                self.show_end_screen("You lost.", (255, 0, 0))
+                self.show_end_screen(f"You lost with a score of {len(self.snake.coords)}.", (255, 0, 0))
                 break
 
             pygame.display.update()
@@ -323,16 +323,11 @@ def main():
         game = Game(surface)
         game.run()
 
-        print("ended")
-
-        print("sent ready")
         send("ready", client_socket)
         send("ready2", client_socket)
 
         while receive(client_socket) != "start":
             pass
-
-
 
 
 if __name__ == "__main__":
