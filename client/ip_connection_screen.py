@@ -13,7 +13,7 @@ FONT = pygame.font.SysFont("Calibri Light", 30, (255, 255, 255))
 
 
 class InputBox:
-    def __init__(self, x, y, w, h, text=''):
+    def __init__(self, x, y, w, h, text=""):
         self.rect = pygame.Rect(x, y, w, h)
         self.color = COLOR_INACTIVE
         self.text = text
@@ -39,14 +39,11 @@ class InputBox:
             self.txt_surface = FONT.render(self.text, True, self.color)
 
     def update(self):
-        # Resize the box if the text is too long.
         width = max(200, self.txt_surface.get_width() + 10)
         self.rect.w = width
 
     def draw(self, screen):
-        # Blit the text.
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        # Blit the rect.
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
     def get_text(self):
@@ -73,7 +70,7 @@ class IPConnectionScreen:
 
         # Input boxes
         self.ip_input = InputBox(self.width // 2 - 100, self.player_offset + 20, 200, 40)
-        self.port_input = InputBox(self.width // 2 - 100, self.player_offset + 200, 200, 40)
+        self.port_input = InputBox(self.width // 2 - 100, self.player_offset + 200, 200, 40, "9850")
 
         self.start_message = ""
         self.connected = False

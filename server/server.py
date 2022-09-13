@@ -53,20 +53,23 @@ class GameSetup:
     def __init__(self, clients):
         self.clients = clients
         self.board_size = OPTIONS["board_size"]  # board_size x board_size board
-        self.speed = OPTIONS["speed"]  # server tickrate and movement speed, lower = faster
+        self.speed = OPTIONS["speed"]  # server tickrate and movement speed, updates every speed / 60 seconds
         self.apple_goal = OPTIONS["apple_goal"]  # how long your snake needs to be to win
 
+    # Wait for two players to connect and start the game
     def wait_for_players(self):
         while len(self.clients) < 2:
             clientsocket, address = server_socket.accept()
             print(f"Accepted client with address {address}")
             self.clients.append(Client(clientsocket, address))
 
+    """
+    Give starting game information to the clients
+    The order is: "start" string, self.board_size, self.speed, self.apple_goal
+    """
     def give_start_info(self):
-        # Give the start info to the clients
-        # Order is: "start", board_size, speed, apple_goal
-
         print("Giving start info")
+
         for client in self.clients:
             send(client, "start")
             send(client, self.board_size)
@@ -85,11 +88,18 @@ class Game:
         self.clients = clients
         self.ended = False
 
+    """
+    Gets giver's screen and sends it to recipient. This allows the client
+    to see the other client's board.
+    
+    giver: clientsocket that gives the board
+    recipient: clientsocket that receives the board
+    """
     def get_player_screen(self, giver, recipient):
         while not self.ended:
             screen = receive(giver)
 
-            if screen == "ready":
+            if screen == "ready":  # If the client is ready for a new game, start one
                 break
 
             send(recipient, screen)
@@ -98,6 +108,10 @@ class Game:
             if screen in ("won", "lost"):
                 self.ended = True
 
+    """
+    Starts two get_player_screen threads to allow both clients to see each other's boards.
+    Execute this method to run the game.
+    """
     def run(self):
         t1 = threading.Thread(target=self.get_player_screen, args=(self.clients[0], self.clients[1]))
         t2 = threading.Thread(target=self.get_player_screen, args=(self.clients[1], self.clients[0]))
@@ -105,7 +119,7 @@ class Game:
         t1.start()
         t2.start()
 
-        while not self.ended:
+        while not self.ended:  # Wait for the game to end on the main thread
             time.sleep(0.1)
 
         t1.join()
@@ -116,12 +130,13 @@ def main():
     clients = []
 
     while True:
-        g = GameSetup(clients)
-        clients = g.setup()
+        setup = GameSetup(clients)
+        clients = setup.setup()
 
-        g = Game(clients)
-        g.run()
+        game = Game(clients)
+        game.run()
 
+        # Clear queued messages from both clients
         for client in clients:
             while receive(client) != "ready2":
                 pass
