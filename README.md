@@ -2,9 +2,9 @@
 
 A multiplayer snake game using sockets and Pygame. The objective is to gain the necessary amount of points to win and/or to out-live your opponent.
 
-## Disclaimer - Alpha
+## Disclaimer - Beta
 
-**This project is in alpha. It may be very buggy, and there are still features that need to be added.**
+**This project is in beta. It may be buggy.**
 
 ## Setting up the server and client
 
@@ -44,10 +44,8 @@ No planned features
 
 ### Client
 
-Planned features for beta:
-- Code refactor
-- UI improvements with different fonts
-- Bugfixes
+Planned features for release:
+- Different gamemodes
 
 ## Known issues
 
@@ -57,4 +55,7 @@ No known server side issues
 
 ### Client known issues
 
-The client freezes when the opponent disconnects
+- Client freezes when the opponent disconnects
+- Client does not handle ConnectionResetError or ConnectionAbortedError
+- When small gui is set to `true` in `preferences.json`, the score overlaps with the "Opponent board" text
+- When the client fails to connect to the server (e.g. the server isn't online) then connects to the server, the client crashes.
