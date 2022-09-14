@@ -182,10 +182,10 @@ class Game:
         self.surface = surface
 
         self.your_board_text = gui_text.Text("Your board:", FONT, (255, 255, 255), (60, PLAYER_OFFSET // 2))
-        self.opponent_board_text = gui_text.Text("Opponent's board:", FONT, (255, 255, 255), (95, HEIGHT - WIDTH - 30))
-        self.score_text = gui_text.Text("Score: 1", FONT, (255, 255, 255), (WIDTH - 100, PLAYER_OFFSET // 2))
-        self.opponent_score_text = gui_text.Text("Opponent Score: 1", FONT, (255, 0, 0),
-                                                 (WIDTH - 100, OPPONENT_OFFSET - 30))
+        self.opponent_board_text = gui_text.Text("Enemy board:", FONT, (255, 0, 0), (70, HEIGHT - WIDTH - 30))
+        self.score_text = gui_text.Text("Score: 1", FONT, (255, 255, 255), (WIDTH - 70, PLAYER_OFFSET // 2))
+        self.opponent_score_text = gui_text.Text("Enemy Score: 1", FONT, (255, 0, 0),
+                                                 (WIDTH - 70, OPPONENT_OFFSET - 30))
 
     """
     Draw the grid for the snake board.
@@ -377,6 +377,9 @@ def main():
     # Run the game
     while True:
         game = Game(surface)
+
+        client_socket.settimeout(5)
+        
         game.run()
 
         send("ready", client_socket)
