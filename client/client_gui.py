@@ -29,6 +29,9 @@ HEIGHT = SIZES[GUI]["height"]
 
 FONT = pygame.font.SysFont("Calibri Light", 30)
 
+SNAKE_COLOR = SETTINGS["snake_color"]
+APPLE_COLOR = SETTINGS["apple_color"]
+
 ENDGAME_MESSAGES = {
     "won": "You lost.",
     "lost": "You won!",
@@ -59,7 +62,7 @@ class Cube:
 
 class Snake:
     def __init__(self, default_coords):
-        self.coords = [Cube(coord[0], coord[1], (0, 155, 255)) for coord in default_coords]
+        self.coords = [Cube(coord[0], coord[1], SNAKE_COLOR) for coord in default_coords]
         self.dir = (0, 0)
         self.pop = True  # pop the end of the snake when moving, used for eating an apple
         self.prev_frame_dir = (0, 0)
@@ -96,7 +99,7 @@ class Snake:
     def move(self) -> None:
         self.coords.append(Cube(self.coords[-1].x + self.dir[0],
                                 self.coords[-1].y + self.dir[1],
-                                (0, 155, 255)))
+                                SNAKE_COLOR))
 
         if self.pop:
             self.coords.pop(0)
@@ -129,7 +132,7 @@ class Snake:
 
 class Apple:
     def __init__(self, start_x=0, start_y=0):
-        self.cube = Cube(start_x, start_y, (255, 0, 0))
+        self.cube = Cube(start_x, start_y, APPLE_COLOR)
 
     """
     Draws the cube on the given surface
@@ -214,7 +217,7 @@ class Game:
     Give essential data for the snake position and apple position to the server
     """
     def send_screen_info(self) -> None:
-        pos_data = [(cube.x, cube.y, (0, 155, 255)) for cube in self.snake.coords]
+        pos_data = [(cube.x, cube.y, SNAKE_COLOR) for cube in self.snake.coords]
         pos_data.insert(0, (self.apple.cube.x, self.apple.cube.y, (255, 0, 0)))
         send(pos_data, client_socket)
 

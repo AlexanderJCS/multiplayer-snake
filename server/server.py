@@ -28,7 +28,7 @@ def send(client, message):  # returns: whether the message was sent
         client.clientsocket.send(message)
         return True
 
-    except ConnectionResetError:
+    except (ConnectionResetError, ConnectionAbortedError):
         return False
 
 
@@ -94,6 +94,8 @@ class Game:
     
     giver: clientsocket that gives the board
     recipient: clientsocket that receives the board
+    
+    IMPORTANT: The client will freeze until it receives this packet.
     """
     def get_player_screen(self, giver, recipient):
         while not self.ended:
