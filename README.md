@@ -57,5 +57,4 @@ No known server side issues
 
 - Client freezes when the opponent disconnects
 - Client does not handle ConnectionResetError or ConnectionAbortedError
-- When small gui is set to `true` in `preferences.json`, the score overlaps with the "Opponent board" text
 - When the client fails to connect to the server (e.g. the server isn't online) then connects to the server, the client crashes.
