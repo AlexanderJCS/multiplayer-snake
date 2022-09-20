@@ -113,7 +113,6 @@ class Snake:
             cube.draw(surface, board_size, y_offset)
 
     def won(self, win_len) -> bool:
-        print(f"win len: {win_len}")
         return len(self.coords) >= win_len
 
     def lost(self, board_size) -> bool:
@@ -337,6 +336,10 @@ class Game:
             # Check if the opponent won/lost
             if self.check_endgame() is True:
                 self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
+
+                if self.opponent_board == "Client disconnected":
+                    exit()
+
                 break
 
             # Draw the opponent board
