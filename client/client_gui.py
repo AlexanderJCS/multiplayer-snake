@@ -14,6 +14,7 @@ client_socket.settimeout(10)
 
 HEADERSIZE = 10
 
+
 with open("preferences.json") as f:
     SETTINGS = json.load(f)
 
@@ -35,7 +36,7 @@ APPLE_COLOR = SETTINGS["apple_color"]
 ENDGAME_MESSAGES = {
     "won": "You lost.",
     "lost": "You won!",
-    "Client disconnected": "Opponent disconnected. You win."
+    "Client disconnected": "Opponent left."
 }
 
 
@@ -112,6 +113,7 @@ class Snake:
             cube.draw(surface, board_size, y_offset)
 
     def won(self, win_len) -> bool:
+        print(f"win len: {win_len}")
         return len(self.coords) >= win_len
 
     def lost(self, board_size) -> bool:
@@ -176,6 +178,8 @@ class Game:
         self.board_size = receive(client_socket)
         self.speed = receive(client_socket)
         self.apple_goal = receive(client_socket)
+
+        print(f"{self.board_size=}, {self.speed=}, {self.apple_goal=}")
 
         self.snake = Snake([(self.board_size // 2, self.board_size // 2)])
         self.apple = Apple(2, 2)
@@ -242,8 +246,6 @@ class Game:
     Draws the text on the screen.
     """
     def draw_text(self) -> None:
-        font = pygame.font.SysFont("Calibri Light", 30)
-
         self.score_text.change_text(f"Score: {len(self.snake.coords)} / {self.apple_goal}")
         self.opponent_score_text.change_text(f"Score: {len(self.opponent_board) - 1} / {self.apple_goal}")
 
@@ -367,13 +369,24 @@ class Game:
 
 
 def main():
+    global client_socket
+
     # Setup pygame
     pygame.display.set_caption("Multiplayer Snake")
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
 
     # Run the IP connection screen
-    conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket)
-    conn.run()
+    connection_msg = "Press enter to connect"
+
+    while True:
+        conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket, connection_msg)
+
+        if conn.run():  # if successfully connected
+            break
+
+        # If the connection failed, redefine the client socket to avoid issues
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connection_msg = "Failed"
 
     client_socket.settimeout(1000)
 

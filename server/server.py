@@ -28,7 +28,7 @@ def send(client, message):  # returns: whether the message was sent
         client.clientsocket.send(message)
         return True
 
-    except (ConnectionResetError, ConnectionAbortedError):
+    except (ConnectionResetError, ConnectionAbortedError, socket.timeout):
         return False
 
 

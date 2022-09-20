@@ -51,7 +51,7 @@ class InputBox:
 
 
 class IPConnectionScreen:
-    def __init__(self, surface, width, player_offset, client_socket):
+    def __init__(self, surface, width, player_offset, client_socket, info_text):
         self.surface = surface
         self.client_socket = client_socket
 
@@ -65,7 +65,7 @@ class IPConnectionScreen:
         self.port_text = Text("Server Port:", FONT, (255, 255, 255),
                               (self.width // 2, self.player_offset + 180))
 
-        self.info_text = Text("Press enter to connect", FONT, (255, 255, 255),
+        self.info_text = Text(info_text, FONT, (255, 255, 255),
                               (self.width // 2, self.player_offset + 300))
 
         # Input boxes
@@ -92,10 +92,7 @@ class IPConnectionScreen:
     def run(self):
         clock = pygame.time.Clock()
 
-        while True:
-            if self.start_message != "":
-                return self.ip_input.get_text(), self.port_input.get_text()
-
+        while self.start_message == "":
             events = pygame.event.get()
 
             for event in events:
@@ -105,6 +102,10 @@ class IPConnectionScreen:
 
                 if event.type == pygame.KEYDOWN and not self.connected and event.key == pygame.K_RETURN:
                     self.connected = self.connect()
+
+                    if not self.connected:
+                        return False
+
                     self.client_socket.settimeout(1000)
 
                     t = threading.Thread(target=self.get_start_message)
@@ -115,6 +116,8 @@ class IPConnectionScreen:
 
             self.draw()
             clock.tick(60)
+
+        return True
 
     def connect(self):  # returns: if the client successfully connected
         self.info_text.change_text("Connecting...")

@@ -1,5 +1,5 @@
 {
-  "small_gui": false,
+  "small_gui": true,
   "snake_color": [0, 155, 255],
   "apple_color": [255, 0, 0]
 }
