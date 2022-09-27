@@ -1,3 +1,4 @@
+import contextlib
 import threading
 import random
 import pygame
@@ -13,7 +14,6 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.settimeout(10)
 
 HEADERSIZE = 10
-
 
 with open("preferences.json") as f:
     SETTINGS = json.load(f)
@@ -36,7 +36,7 @@ APPLE_COLOR = SETTINGS["apple_color"]
 ENDGAME_MESSAGES = {
     "won": "You lost.",
     "lost": "You won!",
-    "Client disconnected": "Opponent left."
+    "Client disconnected": "Opponent disconnected. You win."
 }
 
 
@@ -122,10 +122,10 @@ class Snake:
             return True
 
         for i, block in enumerate(self.coords):
-            if i == len(self.coords) - 1:
+            if i == len(self.coords) - 1:  # skip the head
                 continue
 
-            if block.x == head.x and block.y == head.y:
+            if block.x == head.x and block.y == head.y:  # if a block intersects the head
                 return True
 
         return False
@@ -177,8 +177,6 @@ class Game:
         self.board_size = receive(client_socket)
         self.speed = receive(client_socket)
         self.apple_goal = receive(client_socket)
-
-        print(f"{self.board_size=}, {self.speed=}, {self.apple_goal=}")
 
         self.snake = Snake([(self.board_size // 2, self.board_size // 2)])
         self.apple = Apple(2, 2)
@@ -245,6 +243,8 @@ class Game:
     Draws the text on the screen.
     """
     def draw_text(self) -> None:
+        font = pygame.font.SysFont("Calibri Light", 30)
+
         self.score_text.change_text(f"Score: {len(self.snake.coords)} / {self.apple_goal}")
         self.opponent_score_text.change_text(f"Score: {len(self.opponent_board) - 1} / {self.apple_goal}")
 
@@ -336,10 +336,6 @@ class Game:
             # Check if the opponent won/lost
             if self.check_endgame() is True:
                 self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
-
-                if self.opponent_board == "Client disconnected":
-                    exit()
-
                 break
 
             # Draw the opponent board
@@ -379,34 +375,35 @@ def main():
     surface = pygame.display.set_mode((WIDTH, HEIGHT))
 
     # Run the IP connection screen
-    connection_msg = "Press enter to connect"
+    conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket)
 
     while True:
-        conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket, connection_msg)
+        connected = conn.run()
 
-        if conn.run():  # if successfully connected
+        if connected:
             break
 
-        # If the connection failed, redefine the client socket to avoid issues
+        # Reset the client socket to avoid errors if the connection failed
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connection_msg = "Failed"
+        conn = connect.IPConnectionScreen(surface, WIDTH, PLAYER_OFFSET, client_socket, "Failed")
 
     client_socket.settimeout(1000)
 
     # Run the game
     while True:
-        game = Game(surface)
+        with contextlib.suppress(TimeoutError):
+            game = Game(surface)
 
-        client_socket.settimeout(5)
-        
-        game.run()
+            client_socket.settimeout(5)
 
-        send("ready", client_socket)
-        send("ready2", client_socket)
+            game.run()
 
-        # Clear all pending messages from the server before replaying
-        while receive(client_socket) != "start":
-            pass
+            send("ready", client_socket)
+            send("ready2", client_socket)
+
+            # Clear all pending messages from the server before replaying
+            while receive(client_socket) != "start":
+                pass
 
 
 if __name__ == "__main__":

@@ -28,22 +28,17 @@ def send(client, message):  # returns: whether the message was sent
         client.clientsocket.send(message)
         return True
 
-    except (ConnectionResetError, ConnectionAbortedError, socket.timeout):
+    except (ConnectionResetError, ConnectionAbortedError):
         return False
 
 
 def receive(client):
-    try:
-        header = client.clientsocket.recv(HEADERSIZE)
-
-        if header == b"":
-            return "Client disconnected"
-
-        message_length = int(header.decode('utf-8').strip())
-        message = client.clientsocket.recv(message_length)
-
-    except ConnectionResetError:
+    header = client.clientsocket.recv(HEADERSIZE)
+    if header == b"":
         return "Client disconnected"
+
+    message_length = int(header.decode('utf-8').strip())
+    message = client.clientsocket.recv(message_length)
 
     return json.loads(message)
 
@@ -58,7 +53,7 @@ class GameSetup:
     def __init__(self, clients):
         self.clients = clients
         self.board_size = OPTIONS["board_size"]  # board_size x board_size board
-        self.speed = OPTIONS["speed"]  # server tick rate and snake movement speed, updates every speed / 60 seconds
+        self.speed = OPTIONS["speed"]  # server tickrate and movement speed, updates every speed / 60 seconds
         self.apple_goal = OPTIONS["apple_goal"]  # how long your snake needs to be to win
 
     # Wait for two players to connect and start the game

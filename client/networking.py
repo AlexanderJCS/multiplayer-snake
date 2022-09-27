@@ -16,10 +16,6 @@ def send(message, client_socket):
         print("An existing connection was forcibly closed by the remote host")
         exit()
 
-    except ConnectionAbortedError:
-        print("Connection aborted with the server")
-        exit()
-
 
 def receive(client_socket):
     message_length = client_socket.recv(HEADERSIZE)
