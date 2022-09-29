@@ -1,4 +1,3 @@
-import contextlib
 import threading
 import random
 import pygame
@@ -36,7 +35,7 @@ APPLE_COLOR = SETTINGS["apple_color"]
 ENDGAME_MESSAGES = {
     "won": "You lost.",
     "lost": "You won!",
-    "Client disconnected": "Opponent disconnected. You win."
+    "Client disconnected": "Enemy left."
 }
 
 
@@ -243,8 +242,6 @@ class Game:
     Draws the text on the screen.
     """
     def draw_text(self) -> None:
-        font = pygame.font.SysFont("Calibri Light", 30)
-
         self.score_text.change_text(f"Score: {len(self.snake.coords)} / {self.apple_goal}")
         self.opponent_score_text.change_text(f"Score: {len(self.opponent_board) - 1} / {self.apple_goal}")
 
@@ -334,6 +331,12 @@ class Game:
             send_thread.join()
 
             # Check if the opponent won/lost
+            if self.opponent_board == "Client disconnected":
+                self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
+                print("Disconnected")
+                pygame.quit()
+                exit()
+
             if self.check_endgame() is True:
                 self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
                 break
@@ -391,19 +394,22 @@ def main():
 
     # Run the game
     while True:
-        with contextlib.suppress(TimeoutError):
-            game = Game(surface)
+        game = Game(surface)
 
-            client_socket.settimeout(5)
+        client_socket.settimeout(5)
 
-            game.run()
+        game.run()
 
-            send("ready", client_socket)
-            send("ready2", client_socket)
+        print("Out of game.run()")
 
-            # Clear all pending messages from the server before replaying
-            while receive(client_socket) != "start":
-                pass
+        send("ready", client_socket)
+        send("ready2", client_socket)
+
+        # Clear all pending messages from the server before replaying
+        client_socket.settimeout(1000)
+
+        while receive(client_socket) != "start":
+            pass
 
 
 if __name__ == "__main__":

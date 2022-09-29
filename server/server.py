@@ -20,6 +20,8 @@ with open("preferences.json") as f:
 
 
 def send(client, message):  # returns: whether the message was sent
+    print(f"Sending message {message}")
+
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
 
@@ -28,17 +30,26 @@ def send(client, message):  # returns: whether the message was sent
         client.clientsocket.send(message)
         return True
 
-    except (ConnectionResetError, ConnectionAbortedError):
+    except ConnectionResetError:
         return False
 
 
 def receive(client):
-    header = client.clientsocket.recv(HEADERSIZE)
-    if header == b"":
-        return "Client disconnected"
+    print("Attemting to receive packet")
 
-    message_length = int(header.decode('utf-8').strip())
-    message = client.clientsocket.recv(message_length)
+    try:
+        header = client.clientsocket.recv(HEADERSIZE)
+
+        if header == b"":
+            print(f"Socket {client} disconnected")
+            return "Client disconnected"
+
+        message_length = int(header.decode('utf-8').strip())
+        message = client.clientsocket.recv(message_length)
+
+    except (ConnectionResetError, ConnectionAbortedError):
+        print(f"Connection reset or connection aborted error: socket {client} disconnected")
+        return "Client disconnected"
 
     return json.loads(message)
 
@@ -99,16 +110,21 @@ class Game:
     """
     def get_player_screen(self, giver, recipient):
         while not self.ended:
-            screen = receive(giver)
+            try:
+                screen = receive(giver)
 
-            if screen == "ready":  # If the client is ready for a new game, start one
-                break
+                if screen == "ready":  # If the client is ready for a new game, start one
+                    break
 
-            send(recipient, screen)
+                print(screen)
+                send(recipient, screen)
 
-            # If the player won or lost
-            if screen in ("won", "lost"):
-                self.ended = True
+                # If the player won or lost
+                if screen in ("won", "lost", "Client disconnected"):
+                    self.ended = True
+
+            except json.JSONDecodeError:
+                print(f"Invalid packet received from socket {giver}")
 
     """
     Starts two get_player_screen threads to allow both clients to see each other's boards.
@@ -140,8 +156,15 @@ def main():
 
         # Clear queued messages from both clients
         for client in clients:
-            while receive(client) != "ready2":
-                pass
+            packet = receive(client)
+
+            if packet == "Client disconnected":
+                print("Clearing clients")
+                clients = []
+                continue
+
+            while packet != "ready2":
+                packet = receive(client)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@ def send(message, client_socket):
 
 
 def receive(client_socket):
+    print("Attempting to receive packet")
+
     message_length = client_socket.recv(HEADERSIZE)
 
     if message_length == b"":
@@ -25,5 +27,7 @@ def receive(client_socket):
         exit()
 
     message = client_socket.recv(int(message_length))
+
+    print(f"Message: {message}")
 
     return json.loads(message)
