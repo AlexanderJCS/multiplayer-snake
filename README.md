@@ -51,9 +51,8 @@ Planned features for release:
 
 ### Server known issues
 
-No known server side issues
+No known server-side issues
 
 ### Client known issues
 
-- Client freezes when the opponent disconnects
-- Client does not handle ConnectionResetError or ConnectionAbortedError
+No known client-side issues
