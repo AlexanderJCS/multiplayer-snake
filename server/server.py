@@ -1,7 +1,23 @@
 import threading
+import logging
 import socket
 import json
 import time
+
+
+with open("preferences.json") as f:
+    OPTIONS = json.load(f)
+
+
+logging.basicConfig(
+    filename=f"log_{int(time.time())}.txt",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+logger = logging.getLogger()
+logger.setLevel(OPTIONS["logging_level"])
+
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 9850
@@ -15,18 +31,15 @@ server_socket.listen(2)
 HEADERSIZE = 10
 
 
-with open("preferences.json") as f:
-    OPTIONS = json.load(f)
-
-
 def send(client, message):  # returns: whether the message was sent
-    print(f"Sending message {message}")
+    logging.debug(f"Sending message {message}")
 
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
 
     try:
         client.clientsocket.send(header_info)
+        client.clientsocket.send(message)
         client.clientsocket.send(message)
         return True
 
@@ -35,20 +48,20 @@ def send(client, message):  # returns: whether the message was sent
 
 
 def receive(client):
-    print("Attemting to receive packet")
+    logging.debug("Attemting to receive packet")
 
     try:
         header = client.clientsocket.recv(HEADERSIZE)
 
         if header == b"":
-            print(f"Socket {client} disconnected")
+            logging.warning(f"Socket {client} disconnected")
             return "Client disconnected"
 
         message_length = int(header.decode('utf-8').strip())
         message = client.clientsocket.recv(message_length)
 
     except (ConnectionResetError, ConnectionAbortedError):
-        print(f"Connection reset or connection aborted error: socket {client} disconnected")
+        logging.warning(f"Connection reset or connection aborted error: socket {client} disconnected")
         return "Client disconnected"
 
     return json.loads(message)
@@ -71,7 +84,7 @@ class GameSetup:
     def wait_for_players(self):
         while len(self.clients) < 2:
             clientsocket, address = server_socket.accept()
-            print(f"Accepted client with address {address}")
+            logging.info(f"Accepted client with address {address}")
             self.clients.append(Client(clientsocket, address))
 
     """
@@ -79,7 +92,7 @@ class GameSetup:
     The order is: "start" string, self.board_size, self.speed, self.apple_goal
     """
     def give_start_info(self):
-        print("Giving start info")
+        logging.info("Giving start info")
 
         for client in self.clients:
             send(client, "start")
@@ -116,15 +129,15 @@ class Game:
                 if screen == "ready":  # If the client is ready for a new game, start one
                     break
 
-                print(screen)
                 send(recipient, screen)
 
                 # If the player won or lost
                 if screen in ("won", "lost", "Client disconnected"):
+                    logging.info(f"Client {screen}")
                     self.ended = True
 
             except json.JSONDecodeError:
-                print(f"Invalid packet received from socket {giver}")
+                logging.warning(f"Invalid packet received from socket {giver}")
 
     """
     Starts two get_player_screen threads to allow both clients to see each other's boards.
@@ -159,7 +172,6 @@ def main():
             packet = receive(client)
 
             if packet == "Client disconnected":
-                print("Clearing clients")
                 clients = []
                 continue
 

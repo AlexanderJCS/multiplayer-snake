@@ -1,3 +1,4 @@
+import logging
 import json
 
 
@@ -13,21 +14,21 @@ def send(message, client_socket):
         client_socket.send(message)
 
     except ConnectionResetError:
-        print("An existing connection was forcibly closed by the remote host")
+        logging.critical("An existing connection was forcibly closed by the remote host")
         exit()
 
 
 def receive(client_socket):
-    print("Attempting to receive packet")
+    logging.debug("Attempting to receive packet")
 
     message_length = client_socket.recv(HEADERSIZE)
 
     if message_length == b"":
-        print("Server disconnected")
+        logging.critical("Server disconnected")
         exit()
 
     message = client_socket.recv(int(message_length))
 
-    print(f"Message: {message}")
+    logging.debug("Received")
 
     return json.loads(message)

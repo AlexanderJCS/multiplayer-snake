@@ -1,13 +1,25 @@
 import threading
+import logging
 import random
 import pygame
 import socket
 import json
+import time
 
 import gui_text
 import ip_connection_screen as connect
 
 from networking import send, receive
+
+
+logging.basicConfig(
+    filename=f"log_{int(time.time())}.txt",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+logger = logging.getLogger()
+logger.setLevel(20)
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.settimeout(10)
@@ -333,7 +345,6 @@ class Game:
             # Check if the opponent won/lost
             if self.opponent_board == "Client disconnected":
                 self.show_end_screen(ENDGAME_MESSAGES[self.opponent_board], (255, 255, 255))
-                print("Disconnected")
                 pygame.quit()
                 exit()
 
@@ -399,8 +410,6 @@ def main():
         client_socket.settimeout(5)
 
         game.run()
-
-        print("Out of game.run()")
 
         send("ready", client_socket)
         send("ready2", client_socket)
