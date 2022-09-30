@@ -10,10 +10,11 @@ with open("preferences.json") as f:
 
 
 logging.basicConfig(
-    filename=f"log_{int(time.time())}.txt",
+    filename="log.txt",
     format='%(asctime)s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+
 
 logger = logging.getLogger()
 logger.setLevel(OPTIONS["logging_level"])
@@ -37,9 +38,10 @@ def send(client, message):  # returns: whether the message was sent
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
 
+    print(f"Header: {header_info}, message: {message}")
+
     try:
         client.clientsocket.send(header_info)
-        client.clientsocket.send(message)
         client.clientsocket.send(message)
         return True
 

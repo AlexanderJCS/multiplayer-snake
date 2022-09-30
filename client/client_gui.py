@@ -4,7 +4,6 @@ import random
 import pygame
 import socket
 import json
-import time
 
 import gui_text
 import ip_connection_screen as connect
@@ -13,10 +12,11 @@ from networking import send, receive
 
 
 logging.basicConfig(
-    filename=f"log_{int(time.time())}.txt",
+    filename="log.txt",
     format='%(asctime)s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+
 
 logger = logging.getLogger()
 logger.setLevel(20)

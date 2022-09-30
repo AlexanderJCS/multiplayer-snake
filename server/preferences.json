@@ -2,5 +2,5 @@
   "speed": 7,
   "board_size": 20,
   "apple_goal": 100,
-  "logging_level": 20
+  "logging_level": 10
 }

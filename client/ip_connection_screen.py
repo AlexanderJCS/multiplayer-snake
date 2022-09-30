@@ -122,6 +122,8 @@ class IPConnectionScreen:
             self.draw()
             clock.tick(60)
 
+        print(self.start_message)
+
         return True  # the connection succeeded
 
     def connect(self):  # returns: if the client successfully connected
