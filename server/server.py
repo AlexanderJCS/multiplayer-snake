@@ -38,8 +38,6 @@ def send(client, message):  # returns: whether the message was sent
     message = json.dumps(message, ensure_ascii=False).encode("utf-8")
     header_info = f"{len(message):<{HEADERSIZE}}".encode("utf-8")
 
-    print(f"Header: {header_info}, message: {message}")
-
     try:
         client.clientsocket.send(header_info)
         client.clientsocket.send(message)
